@@ -27,5 +27,3 @@ while True:
 		dialogo.close()
 		exit( 0 )
 s.close()
-
-hola millán
