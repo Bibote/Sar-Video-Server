@@ -56,10 +56,39 @@ def Get(comando):
 	return 0
 
 def Tag(comando):
-	return 0
+	if len(comando) < 5:
+		return "Error 03: Falta un parametro que no es opcional. El formato es: TAG {id} [etiqueta]"
+	
+	parametros = comando[4:len(comando)]
+	longitud = len(parametros)
+
+	idvideo = parametros[0:5]
+	if longitud < 6:
+		lista = ''
+		for i in listaVideos:
+			if i.darID() == idvideo:
+				lista = i.darEtiqueta()
+				return "OK: La etiqueta de " + idvideo + " es -> " + lista
+		
+		return "Error 08: El id de dicho video no existe, introduzca uno correcto."
+	
+	etiquetaVideo = parametros[parametros.find("#"):len(parametros)]
+	for i in listaVideos:
+		if i.darID() == idvideo:
+			i.etiqueta += etiquetaVideo
+			return "OK"
+	return "Error 08: El id de dicho video no existe, introduzca uno correcto."
 
 def Fnd(comando):
-	return 0
+	lista = ''
+	idvideo = ''
+	etiqueta = comando[4:len(comando)]
+
+	for i in listaVideos:
+		if i.darEtiqueta().find(etiqueta) != -1:
+			lista += '#' + i.darID()
+	return "OK: Los videos con dicha etiqueta son ->" + lista
+
 
 def Qit(comando):
 	return 0
@@ -73,7 +102,7 @@ def switch(case, comando):
 	  "FND": Fnd(comando),
 	  "QIT": Qit(comando)
    }
-   return sw.get(case, "Comando Erróneo")
+   return sw.get(case, "Error 01: Comando Erróneo")
 
 PORT = 50004
 
