@@ -23,6 +23,8 @@ while True:
 			if not buf:
 				break
 			dialogo.sendall( buf )
+
+			print("hola")
 		print( "Solicitud de cierre de conexión recibida." )
 		dialogo.close()
 		exit( 0 )
