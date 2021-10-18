@@ -4,10 +4,11 @@ import socket, os, signal
 
 class Video(object):
 	
-	def __init__(self, id, etiqueta, tamaño):
+	def __init__(self, id, etiqueta, tamaño, video):
 		self.id = id
 		self.etiqueta = etiqueta
 		self.tamaño = tamaño
+		self.video = video
 
 	def darID(self):
 		return self.id
@@ -31,9 +32,9 @@ class Usuario(object):
 		return self.contraseña
 
 #Creamos la lista de Videos y la rellenamos
-v1 = Video('VID01', 'playa', '2')
-v2 = Video('VID02', 'monte', '10')
-v3 = Video('VID03', 'familia', '8')
+v1 = Video('VID01', 'playa', '2', '10101')
+v2 = Video('VID02', 'monte', '10', '10101')
+v3 = Video('VID03', 'familia', '8', '10101')
 
 listaVideos = [v1, v2, v3]
 
