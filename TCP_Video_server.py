@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import socket, os, signal
+from _typeshed import Self
+import socket, os, signal 
 
 class Video(object):
 	
@@ -19,28 +20,41 @@ class Video(object):
 	def darTamaño(self):
 		return self.tamaño
 
+	def darVideo(self):
+		return self.video
+
 class Usuario(object):
 
 	def __init__(self, usuario, contraseña):
 		self.usuario = usuario
 		self.contraseña = contraseña
+		self.videos= []
 	
 	def darUsuario(self):
 		return self.usuario
 
 	def darContraseña(self):
 		return self.contraseña
+	def darVideos(self):
+		return self.videos
+	def addVideo(self, video):
+		self.videos.append(video)
+		
 
 #Creamos la lista de Videos y la rellenamos
 v1 = Video('VID01', 'playa', '2', '10101')
 v2 = Video('VID02', 'monte', '10', '10101')
 v3 = Video('VID03', 'familia', '8', '10101')
 
-listaVideos = [v1, v2, v3]
+
 
 u1 = Usuario('admin', 'admin')
 u2 = Usuario('ibai', 'ibai')
 u3 = Usuario('olatz', 'olatz')
+
+u1.addVideo(v1)
+u2.addVideo(v2)
+u3.addVideo(v3)
 
 
 listaUsuarios = [u1, u2, u3]
@@ -52,8 +66,14 @@ def Log(comando):
 def Put(comando):
 	return 0
 
-def Get(comando):
-	return 0
+def Get(user, comando):
+	if len(comando) < 5:
+		return "Error 03"
+
+	for i in user.darVideos:
+		if i.darID==comando:
+			return len(i.darVideo)+"#"+i.darVideo
+	return "-ER07"
 
 def Tag(comando):
 	if len(comando) < 5:
