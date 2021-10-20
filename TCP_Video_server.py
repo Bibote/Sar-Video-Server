@@ -66,10 +66,23 @@ listaUsuarios = [u1, u2, u3]
 
 #LISTA DE COMANDOS DEL SERVIDOR
 def Log(comando):
-	global usuario_actual
-	usuario_actual=u1
-	print("LOG command executed")
-	return "+OK"
+    global usuario_actual
+    #Estructura Log: LOGuser1#user1
+    usuario_actual=None
+    if(len(comando)<7):
+        return'-ER03\r\n'
+    else:
+        usuario=comando[4:comando.find("#")]
+        contra=comando[comando.find("#"):len(comando)]
+        found=False
+        for user in listaUsuarios:
+            if(user.darUsuario()==usuario and user.darContraseña()==contra):
+                found=True
+                usuario_actual=user
+                print(user)
+                break
+        if(found==False):
+            return '-ER05\r\n'
 
 def Put(comando):
 	global ultimo_video_id
