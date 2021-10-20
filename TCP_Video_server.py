@@ -46,7 +46,9 @@ v1 = Video('VID01', 'playa', '2', '10101')
 v2 = Video('VID02', 'monte', '10', '10101')
 v3 = Video('VID03', 'familia', '8', '10101')
 
-
+#Se crean variables globales para saber qué usuario ha hecho login y el último id del vídeo
+ultimo_video_id = 0
+usuario_actual=null
 
 u1 = Usuario('admin', 'admin')
 u2 = Usuario('ibai', 'ibai')
@@ -61,9 +63,16 @@ listaUsuarios = [u1, u2, u3]
 
 #LISTA DE COMANDOS DEL SERVIDOR
 def Log(comando):
+	#pongo esta línea para probar el put, guardando el usuario actual
+	usuario_actual=comando.partition('#')[0]
 	return 0
 
 def Put(comando):
+	#ME HACE FALTA SABER QUÉ USUARIO ESTÁ LOGGEADO PARA METER SU VÍDEO
+	datos = comando.decode().partition('#')  #devuelve: ('tamaño','#','el vídeo en sí')
+	vídeo = Video(ultimo_video_id,null,datos[0],datos [2])
+	ultimo_video_id+=1
+	usuario_actual.addVideo(video)
 	return 0
 
 def Get(user, comando):
