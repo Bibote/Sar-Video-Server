@@ -29,7 +29,8 @@ class Usuario(object):
 		self.usuario = usuario
 		self.contraseña = contraseña
 		self.videos= []
-	
+		self.num_videos = 0
+		self.max_videos = 100
 	def darUsuario(self):
 		return self.usuario
 
@@ -38,7 +39,11 @@ class Usuario(object):
 	def darVideos(self):
 		return self.videos
 	def addVideo(self, video):
-		self.videos.append(video)
+		if (self.num_videos==self.max_videos):
+			return(-1)
+		else:
+			self.videos.append(video)
+			self.num_videos+=1
 		
 
 #Creamos la lista de Videos y la rellenamos
@@ -68,12 +73,19 @@ def Log(comando):
 	return 0
 
 def Put(comando):
+	if len(comando) < 3:
+		return "Error 03"
+
 	#ME HACE FALTA SABER QUÉ USUARIO ESTÁ LOGGEADO PARA METER SU VÍDEO
 	datos = comando.decode().partition('#')  #devuelve: ('tamaño','#','el vídeo en sí')
+	if (datos[0]=='' or datos[2]==''):
+		return "-ER04"
 	vídeo = Video(ultimo_video_id,null,datos[0],datos [2])
 	ultimo_video_id+=1
-	usuario_actual.addVideo(video)
-	return 0
+	if(usuario_actual.addVideo(video)==-1):
+		return ('-ER06')
+	else:
+		return ('+OK' + ultimo_video_id-1 + '\r\n')
 
 def Get(user, comando):
 	if len(comando) < 5:
