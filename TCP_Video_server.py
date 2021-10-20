@@ -77,13 +77,13 @@ def Put(comando):
 		return "Error 03"
 
 	#ME HACE FALTA SABER QUÉ USUARIO ESTÁ LOGGEADO PARA METER SU VÍDEO
-	datos = comando.decode().partition('#')  #devuelve: ('tamaño','#','el vídeo en sí')
+	datos = comando.partition('#')  #devuelve: ('tamaño','#','el vídeo en sí')
 	if (datos[0]=='' or datos[2]==''):
-		return "-ER04"
+		return ('-ER04\r\n')
 	vídeo = Video(ultimo_video_id,null,datos[0],datos [2])
 	ultimo_video_id+=1
 	if(usuario_actual.addVideo(video)==-1):
-		return ('-ER06')
+		return ('-ER06\r\n')
 	else:
 		return ('+OK' + ultimo_video_id-1 + '\r\n')
 
