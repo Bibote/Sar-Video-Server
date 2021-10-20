@@ -5,9 +5,9 @@ import socket, os, signal
 
 class Video(object):
 	
-	def __init__(self, id, etiqueta, tamaño, video):
+	def __init__(self, id, tamaño, video, etiqueta=None):
 		self.id = id
-		self.etiqueta = etiqueta
+		self.etiqueta = [etiqueta]
 		self.tamaño = tamaño
 		self.video = video
 
@@ -22,6 +22,9 @@ class Video(object):
 
 	def darVideo(self):
 		return self.video
+
+	def addEtiqueta(self,netiqueta):
+		return self.etiqueta.append(netiqueta)
 
 class Usuario(object):
 
@@ -42,11 +45,13 @@ class Usuario(object):
 		
 
 #Creamos la lista de Videos y la rellenamos
-v1 = Video('VID01', 'playa', '2', '10101')
-v2 = Video('VID02', 'monte', '10', '10101')
-v3 = Video('VID03', 'familia', '8', '10101')
+v1 = Video('VID01', '2', '10101', 'playa')
+v2 = Video('VID02','10', '10101', 'monte')
+v3 = Video('VID03', '8', '10101', 'familia')
 
-
+#Se crean variables globales para saber qué usuario ha hecho login y el último id del vídeo
+ultimo_video_id = 0
+usuario_actual: Usuario
 
 u1 = Usuario('admin', 'admin')
 u2 = Usuario('ibai', 'ibai')
@@ -61,10 +66,31 @@ listaUsuarios = [u1, u2, u3]
 
 #LISTA DE COMANDOS DEL SERVIDOR
 def Log(comando):
-	return 0
+	global usuario_actual
+	usuario_actual=u1
+	print("LOG command executed")
+	return "+OK"
 
 def Put(comando):
-	return 0
+	global ultimo_video_id
+	global usuario_actual
+	if len(comando) < 6:
+		return "Error 03"
+
+	#ME HACE FALTA SABER QUÉ USUARIO ESTÁ LOGGEADO PARA METER SU VÍDEO
+	datos = comando[3:].partition('#')  #devuelve: ('tamaño','#','el vídeo en sí')
+	if (datos[0]=='' or datos[2]==''):
+		return ('-ER04\r\n')
+
+	print("tamaño del vídeo",datos[0])
+	print("contenido del vídeo",datos[2])
+
+	vídeo = Video(ultimo_video_id,datos[0],datos [2])
+	ultimo_video_id+=1
+	if(usuario_actual.addVideo(vídeo)==-1):
+		return ('-ER06\r\n')
+	else:
+		return ('+OK' + str(ultimo_video_id-1) + '\r\n')
 
 def Get(user, comando):
 	if len(comando) < 5:
