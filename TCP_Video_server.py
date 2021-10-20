@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from _typeshed import Self
+#Se asume el usuario1 para las pruebas
 import socket, os, signal 
 
 class Video(object):
@@ -53,7 +53,6 @@ v3 = Video('VID03', 'familia', '8', '10101')
 
 #Se crean variables globales para saber qué usuario ha hecho login y el último id del vídeo
 ultimo_video_id = 0
-usuario_actual=null
 
 u1 = Usuario('admin', 'admin')
 u2 = Usuario('ibai', 'ibai')
@@ -69,7 +68,7 @@ listaUsuarios = [u1, u2, u3]
 #LISTA DE COMANDOS DEL SERVIDOR
 def Log(comando):
 	#pongo esta línea para probar el put, guardando el usuario actual
-	usuario_actual=comando.partition('#')[0]
+	#usuario_actual=comando.partition('#')[0]
 	return 0
 
 def Put(comando):
@@ -82,16 +81,16 @@ def Put(comando):
 		return ('-ER04\r\n')
 	vídeo = Video(ultimo_video_id,null,datos[0],datos [2])
 	ultimo_video_id+=1
-	if(usuario_actual.addVideo(video)==-1):
+	if(u1.addVideo(video)==-1):
 		return ('-ER06\r\n')
 	else:
 		return ('+OK' + ultimo_video_id-1 + '\r\n')
 
-def Get(user, comando):
+def Get(comando):
 	if len(comando) < 5:
 		return "Error 03"
 
-	for i in user.darVideos:
+	for i in u1.darVideos:
 		if i.darID==comando:
 			return len(i.darVideo)+"#"+i.darVideo
 	return "-ER07"
@@ -152,8 +151,8 @@ s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
 s.bind( ('', PORT) )
 s.listen( 5 )
 
-signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
+signal.signal( signal.SIGCHLD, signal.SIG_IGN )
 while True:
 	dialogo, dir_cli = s.accept()
 	print( "Cliente conectado desde {}:{}.".format( dir_cli[0], dir_cli[1] ) )
@@ -169,7 +168,7 @@ while True:
 			
 			#Comprobamos los tres caracteres
 			case = comando[0:3]
-
+			print("case is: ",case,"\n")
 			#Ejecutamos con la funcion switch el comando y si no existe nos lanza error(declaración arriba)
 			buf2 = switch(case, comando)
 
