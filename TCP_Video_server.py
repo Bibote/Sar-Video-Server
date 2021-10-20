@@ -77,13 +77,9 @@ def Put(comando):
 	if len(comando) < 6:
 		return "Error 03"
 
-	#ME HACE FALTA SABER QUÉ USUARIO ESTÁ LOGGEADO PARA METER SU VÍDEO
 	datos = comando[3:].partition('#')  #devuelve: ('tamaño','#','el vídeo en sí')
 	if (datos[0]=='' or datos[2]==''):
 		return ('-ER04\r\n')
-
-	print("tamaño del vídeo",datos[0])
-	print("contenido del vídeo",datos[2])
 
 	vídeo = Video(ultimo_video_id,datos[0],datos [2])
 	ultimo_video_id+=1
@@ -92,11 +88,12 @@ def Put(comando):
 	else:
 		return ('+OK' + str(ultimo_video_id-1) + '\r\n')
 
-def Get(user, comando):
+def Get(comando):
+	global usuario_actual
 	if len(comando) < 5:
 		return "Error 03"
 
-	for i in user.darVideos:
+	for i in usuario_actual.darVideos:
 		if i.darID==comando:
 			return len(i.darVideo)+"#"+i.darVideo
 	return "-ER07"
@@ -110,10 +107,10 @@ def Tag(comando):
 
 	idvideo = parametros[0:5]
 	if longitud < 6:
-		lista = ''
+		lista = []
 		for i in listaVideos:
 			if i.darID() == idvideo:
-				lista = i.darEtiqueta()
+				lista.append(i.darEtiqueta())
 				return "OK: La etiqueta de " + idvideo + " es -> " + lista
 		
 		return "Error 08: El id de dicho video no existe, introduzca uno correcto."
@@ -139,6 +136,7 @@ def Fnd(comando):
 def Qit(comando):
 	return 0
 
+"""
 def switch(case, comando):
    sw = {
       "LOG": Log(comando),
@@ -149,6 +147,7 @@ def switch(case, comando):
 	  "QIT": Qit(comando)
    }
    return sw.get(case, "Error 01: Comando Erróneo")
+"""
 
 PORT = 50004
 
@@ -174,9 +173,19 @@ while True:
 			
 			#Comprobamos los tres caracteres
 			case = comando[0:3]
-
-			#Ejecutamos con la funcion switch el comando y si no existe nos lanza error(declaración arriba)
-			buf2 = switch(case, comando)
+			#Lo siento no sé arreglar el switch y esto funciona
+			if (case=='LOG'):
+				buf2=Log(comando)
+			elif (case=='PUT'):
+				buf2=Put(comando)
+			elif (case=='GET'):
+				buf2=Get(comando)
+			elif (case=='TAG'):
+				buf2=Tag(comando)
+			elif (case=='FND'):
+				buf2=Fnd(comando)
+			else:
+				buf2='-ERCódigo erróneo'
 
 			dialogo.sendall( buf2.encode())
 
