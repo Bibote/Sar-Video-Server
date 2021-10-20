@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from _typeshed import Self
+
 import socket, os, signal 
 
 class Video(object):
