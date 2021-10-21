@@ -52,10 +52,13 @@ v3 = Video('VID03', '8', '10101', 'familia')
 #Se crean variables globales para saber qué usuario ha hecho login y el último id del vídeo
 ultimo_video_id = 0
 usuario_actual: Usuario
+u0 = Usuario('Usuario fantasma','No usar ni acceder')
+usuario_actual=u0
 
 u1 = Usuario('admin', 'admin')
 u2 = Usuario('ibai', 'ibai')
 u3 = Usuario('olatz', 'olatz')
+
 
 u1.addVideo(v1)
 u2.addVideo(v2)
@@ -66,23 +69,25 @@ listaUsuarios = [u1, u2, u3]
 
 #LISTA DE COMANDOS DEL SERVIDOR
 def Log(comando):
-    global usuario_actual
+	global usuario_actual
+	global u0
     #Estructura Log: LOGuser1#user1
-    usuario_actual=None
-    if(len(comando)<7):
-        return'-ER03\r\n'
-    else:
-        usuario=comando[4:comando.find("#")]
-        contra=comando[comando.find("#"):len(comando)]
-        found=False
-        for user in listaUsuarios:
-            if(user.darUsuario()==usuario and user.darContraseña()==contra):
-                found=True
-                usuario_actual=user
-                print(user)
-                break
-        if(found==False):
-            return '-ER05\r\n'
+	if(len(comando)<7):
+		return'-ER03\r\n'
+	else:
+		datos = comando[3:].partition('#')
+		usuario=datos[0]
+		contra=datos[2]
+		found=False
+		for user in listaUsuarios:
+			if(user.darUsuario()==usuario and user.darContraseña()==contra):
+				found=True
+				usuario_actual=user
+				print(user)
+				break
+		if(found==False):
+				return '-ER05\r\n'
+		return '+OK\r\n'
 
 def Put(comando):
 	global ultimo_video_id
@@ -103,7 +108,7 @@ def Put(comando):
 
 def Get(comando):
 	global usuario_actual
-	if len(comando) < 5:
+	if len(comando) < 4:
 		return "Error 03"
 
 	for i in usuario_actual.darVideos:
@@ -187,18 +192,34 @@ while True:
 			#Comprobamos los tres caracteres
 			case = comando[0:3]
 			#Lo siento no sé arreglar el switch y esto funciona
-			if (case=='LOG'):
-				buf2=Log(comando)
-			elif (case=='PUT'):
-				buf2=Put(comando)
-			elif (case=='GET'):
-				buf2=Get(comando)
-			elif (case=='TAG'):
-				buf2=Tag(comando)
-			elif (case=='FND'):
-				buf2=Fnd(comando)
-			else:
-				buf2='-ERCódigo erróneo'
+			#Hasta que no se haga log se queda aquí
+			while (usuario_actual==u0):
+				if (case=='LOG'):
+					buf2=Log(comando)
+			
+			
+			
+
+			#Cuando ya ha hecho log funcionan los demás
+			if (usuario_actual==u0):
+				if (case=='LOG'):
+					buf2=Log(comando)
+					print(usuario_actual.darUsuario)
+				else:
+					buf2='-ERCódigo erróneo dentro'
+			elif (usuario_actual!=u0):
+				if (case=='LOG'):
+					buf2='-ER'
+				elif (case=='PUT'):
+					buf2=Put(comando)
+				elif (case=='GET'):
+					buf2=Get(comando)
+				elif (case=='TAG'):
+					buf2=Tag(comando)
+				elif (case=='FND'):
+					buf2=Fnd(comando)
+				else:
+					buf2='-ERCódigo erróneo'
 
 			dialogo.sendall( buf2.encode())
 
