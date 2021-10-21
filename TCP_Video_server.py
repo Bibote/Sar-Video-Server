@@ -45,9 +45,12 @@ class Usuario(object):
 		
 
 #Creamos la lista de Videos y la rellenamos
-v1 = Video('VID01', '2', '10101', 'playa')
-v2 = Video('VID02','10', '10101', 'monte')
-v3 = Video('VID03', '8', '10101', 'familia')
+v1 = Video('VID01', '2', '10101')
+v2 = Video('VID02','10', '10101')
+v3 = Video('VID03', '8', '10101')
+v1.addEtiqueta('playa')
+v2.addEtiqueta('monte')
+v3.addEtiqueta('familia')
 
 #Se crean variables globales para saber qué usuario ha hecho login y el último id del vídeo
 ultimo_video_id = 0
@@ -161,6 +164,7 @@ def Fnd(comando):
 		if i.darEtiqueta().find(etiqueta) != -1:
 			lista += '#' + i.darID()
 	return "OK: Los videos con dicha etiqueta son ->" + lista
+
 
 
 def Qit(comando):
