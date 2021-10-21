@@ -5,9 +5,9 @@ import socket, os, signal
 
 class Video(object):
 	
-	def __init__(self, id, tamaño, video, etiqueta):
+	def __init__(self, id, tamaño, video, etiqueta = None):
 		self.id = id
-		self.etiqueta = etiqueta
+		self.etiqueta = etiqueta 
 		self.tamaño = tamaño
 		self.video = video
 
@@ -23,8 +23,8 @@ class Video(object):
 	def darVideo(self):
 		return self.video
 
-	def addEtiqueta(self,netiqueta):
-		return self.etiqueta.append(netiqueta)
+	def addEtiqueta(self,etiqueta):
+		self.etiqueta = etiqueta
 
 class Usuario(object):
 
@@ -39,7 +39,7 @@ class Usuario(object):
 	def darContraseña(self):
 		return self.contraseña
 	def darVideos(self):
-		return self.videos
+		return self.videos 
 	def addVideo(self, video):
 		self.videos.append(video)
 		
@@ -48,6 +48,7 @@ class Usuario(object):
 v1 = Video('VID01', '2', '10101')
 v2 = Video('VID02','10', '10101')
 v3 = Video('VID03', '8', '10101')
+
 v1.addEtiqueta('playa')
 v2.addEtiqueta('monte')
 v3.addEtiqueta('familia')
@@ -99,7 +100,7 @@ def Put(comando):
 	global ultimo_video_id
 	global usuario_actual
 	if len(comando) < 6:
-		return "Error 03"
+		return "-ER03\r\n"
 
 	datos = comando[3:].partition('#')  #devuelve: ('tamaño','#','el vídeo en sí')
 	if (datos[0]=='' or datos[2]==''):
@@ -131,28 +132,27 @@ def Get(comando):
 def Tag(comando):
 	global usuario_actual
 	if len(comando) < 5:
-		return "Error 03: Falta un parametro que no es opcional. El formato es: TAG {id} [etiqueta]"
+		return "-ER03: Falta un parametro que no es opcional. El formato es: TAG {id} [etiqueta]\r\n"
 	
 	parametros = comando[3:len(comando)]
 	longitud = len(parametros)
 
 	idvideo = parametros[0:5]
 	if longitud < 6:
-		lista = ''
 		for i in usuario_actual.darVideos():
 			if i.darID() == idvideo:
-				lista = ('#') + i.darEtiqueta()
+				return ("+OK: La etiqueta de " + idvideo + " es -> " + str(i.darEtiqueta()) + '\r\n')
 				
-		return "OK: La etiqueta de " + idvideo + " es -> " + lista
+		return "-ER08: El id de dicho video no existe, introduzca uno correcto. \r\n"
 		
 	
 	
-	etiquetaVideo = parametros[parametros.find("#"):len(parametros)]
+	etiquetaVideo = parametros[parametros.find("#")+1:len(parametros)]
 	for i in usuario_actual.darVideos():
 		if i.darID() == idvideo:
-			i.etiqueta += etiquetaVideo
-			return "OK"
-	return "Error 08: El id de dicho video no existe, introduzca uno correcto."
+			i.etiqueta = etiquetaVideo
+			return "+OK\r\n"
+	return "-ER08: El id de dicho video no existe, introduzca uno correcto. \r\n"
 
 def Fnd(comando):
 	global usuario_actual
@@ -160,10 +160,10 @@ def Fnd(comando):
 	idvideo = ''
 	etiqueta = comando[3:len(comando)]
 
-	for i in usuario_actual.darVideos:
-		if i.darEtiqueta().find(etiqueta) != -1:
-			lista += '#' + i.darID()
-	return "OK: Los videos con dicha etiqueta son ->" + lista
+	for i in usuario_actual.darVideos():
+		if i.darEtiqueta() == etiqueta:
+			lista += ' ' + i.darID()
+	return ("+OK: Los videos con dicha etiqueta son ->" + lista + '\r\n')
 
 
 
@@ -174,19 +174,6 @@ def Qit(comando):
 		return '-ER02\r\n'
 	
 	return '+OK\r\n'
-
-"""
-def switch(case, comando):
-   sw = {
-      "LOG": Log(comando),
-      "PUT": Put(comando),
-      "GET": Get(comando),
-      "TAG": Tag(comando),
-	  "FND": Fnd(comando),
-	  "QIT": Qit(comando)
-   }
-   return sw.get(case, "Error 01: Comando Erróneo")
-"""
 
 PORT = 50004
 
