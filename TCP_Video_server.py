@@ -191,16 +191,7 @@ while True:
 			
 			#Comprobamos los tres caracteres
 			case = comando[0:3]
-			#Lo siento no sé arreglar el switch y esto funciona
-			#Hasta que no se haga log se queda aquí
-			while (usuario_actual==u0):
-				if (case=='LOG'):
-					buf2=Log(comando)
-			
-			
-			
-
-			#Cuando ya ha hecho log funcionan los demás
+			#Lo siento no sé arreglar el switch y esto funciona			
 			if (usuario_actual==u0):
 				if (case=='LOG'):
 					buf2=Log(comando)
