@@ -235,6 +235,7 @@ while True:
 				elif (case=='QIT'):
 					print( "Cierre de conexión de {}:{}.".format( dir_cli[0], dir_cli[1] ) )
 					buf2= Qit(comando)
+					dialogo.sendall( buf2.encode())
 					
 					dialogo.close()
 					break
