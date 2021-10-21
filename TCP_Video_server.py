@@ -52,8 +52,7 @@ v3 = Video('VID03', '8', '10101', 'familia')
 #Se crean variables globales para saber qué usuario ha hecho login y el último id del vídeo
 ultimo_video_id = 0
 usuario_actual: Usuario
-u0 = Usuario('Usuario fantasma','No usar ni acceder')
-usuario_actual=u0
+
 
 u1 = Usuario('admin', 'admin')
 u2 = Usuario('ibai', 'ibai')
@@ -64,13 +63,14 @@ u1.addVideo(v1)
 u2.addVideo(v2)
 u3.addVideo(v3)
 
+login = False
 
 listaUsuarios = [u1, u2, u3]
 
 #LISTA DE COMANDOS DEL SERVIDOR
 def Log(comando):
 	global usuario_actual
-	global u0
+	global login
     #Estructura Log: LOGuser1#user1
 	if(len(comando)<7):
 		return'-ER03\r\n'
@@ -87,6 +87,7 @@ def Log(comando):
 				break
 		if(found==False):
 				return '-ER05\r\n'
+		login = True
 		return '+OK\r\n'
 
 def Put(comando):
@@ -192,13 +193,12 @@ while True:
 			#Comprobamos los tres caracteres
 			case = comando[0:3]
 			#Lo siento no sé arreglar el switch y esto funciona			
-			if (usuario_actual==u0):
+			if (login==False):
 				if (case=='LOG'):
 					buf2=Log(comando)
-					print(usuario_actual.darUsuario)
 				else:
 					buf2='-ERCódigo erróneo dentro'
-			elif (usuario_actual!=u0):
+			else:
 				if (case=='LOG'):
 					buf2='-ER'
 				elif (case=='PUT'):
