@@ -5,9 +5,9 @@ import socket, os, signal
 
 class Video(object):
 	
-	def __init__(self, id, tamaño, video, etiqueta=None):
+	def __init__(self, id, tamaño, video, etiqueta):
 		self.id = id
-		self.etiqueta = [etiqueta]
+		self.etiqueta = etiqueta
 		self.tamaño = tamaño
 		self.video = video
 
@@ -52,18 +52,15 @@ v3 = Video('VID03', '8', '10101', 'familia')
 #Se crean variables globales para saber qué usuario ha hecho login y el último id del vídeo
 ultimo_video_id = 0
 usuario_actual: Usuario
-
+login = False
 
 u1 = Usuario('admin', 'admin')
 u2 = Usuario('ibai', 'ibai')
 u3 = Usuario('olatz', 'olatz')
 
-
 u1.addVideo(v1)
 u2.addVideo(v2)
 u3.addVideo(v3)
-
-login = False
 
 listaUsuarios = [u1, u2, u3]
 
@@ -129,35 +126,38 @@ def Get(comando):
 	
 
 def Tag(comando):
+	global usuario_actual
 	if len(comando) < 5:
 		return "Error 03: Falta un parametro que no es opcional. El formato es: TAG {id} [etiqueta]"
 	
-	parametros = comando[4:len(comando)]
+	parametros = comando[3:len(comando)]
 	longitud = len(parametros)
 
 	idvideo = parametros[0:5]
 	if longitud < 6:
-		lista = []
-		for i in listaVideos:
+		lista = ''
+		for i in usuario_actual.darVideos():
 			if i.darID() == idvideo:
-				lista.append(i.darEtiqueta())
-				return "OK: La etiqueta de " + idvideo + " es -> " + lista
+				lista = ('#') + i.darEtiqueta()
+				
+		return "OK: La etiqueta de " + idvideo + " es -> " + lista
 		
-		return "Error 08: El id de dicho video no existe, introduzca uno correcto."
+	
 	
 	etiquetaVideo = parametros[parametros.find("#"):len(parametros)]
-	for i in listaVideos:
+	for i in usuario_actual.darVideos():
 		if i.darID() == idvideo:
 			i.etiqueta += etiquetaVideo
 			return "OK"
 	return "Error 08: El id de dicho video no existe, introduzca uno correcto."
 
 def Fnd(comando):
+	global usuario_actual
 	lista = ''
 	idvideo = ''
-	etiqueta = comando[4:len(comando)]
+	etiqueta = comando[3:len(comando)]
 
-	for i in listaVideos:
+	for i in usuario_actual.darVideos:
 		if i.darEtiqueta().find(etiqueta) != -1:
 			lista += '#' + i.darID()
 	return "OK: Los videos con dicha etiqueta son ->" + lista
@@ -207,8 +207,7 @@ while True:
 			comando = buf.decode()
 			
 			#Comprobamos los tres caracteres
-			case = comando[0:3]
-			#Lo siento no sé arreglar el switch y esto funciona			
+			case = comando[0:3]		
 			if (login==False):
 				if (case=='LOG'):
 					buf2=Log(comando)
