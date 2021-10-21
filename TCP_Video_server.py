@@ -5,9 +5,9 @@ import socket, os, signal
 
 class Video(object):
 	
-	def __init__(self, id, tamaño, video, etiqueta = None):
+	def __init__(self, id, tamaño, video):
 		self.id = id
-		self.etiqueta = etiqueta 
+		self.etiqueta = []
 		self.tamaño = tamaño
 		self.video = video
 
@@ -132,7 +132,7 @@ def Get(comando):
 def Tag(comando):
 	global usuario_actual
 	if len(comando) < 5:
-		return "-ER03: Falta un parametro que no es opcional. El formato es: TAG {id} [etiqueta]\r\n"
+		return "-ER03\r\n"
 	
 	parametros = comando[3:len(comando)]
 	longitud = len(parametros)
@@ -143,7 +143,7 @@ def Tag(comando):
 			if i.darID() == idvideo:
 				return ("+OK: La etiqueta de " + idvideo + " es -> " + str(i.darEtiqueta()) + '\r\n')
 				
-		return "-ER08: El id de dicho video no existe, introduzca uno correcto. \r\n"
+		return "-ER08\r\n"
 		
 	
 	
@@ -152,18 +152,20 @@ def Tag(comando):
 		if i.darID() == idvideo:
 			i.etiqueta = etiquetaVideo
 			return "+OK\r\n"
-	return "-ER08: El id de dicho video no existe, introduzca uno correcto. \r\n"
+	return "-ER08\r\n"
 
 def Fnd(comando):
-	global usuario_actual
 	lista = ''
-	idvideo = ''
 	etiqueta = comando[3:len(comando)]
 
 	for i in usuario_actual.darVideos():
-		if i.darEtiqueta() == etiqueta:
-			lista += ' ' + i.darID()
-	return ("+OK: Los videos con dicha etiqueta son ->" + lista + '\r\n')
+		print(i.darEtiqueta())
+		print(etiqueta)
+		if etiqueta in i.darEtiqueta():
+			lista += i.darID()+'#'
+	if lista!='': 
+		lista=lista[:-1]
+	return "+OK:"+ lista
 
 
 
