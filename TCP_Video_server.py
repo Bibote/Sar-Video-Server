@@ -5,9 +5,9 @@ import socket, os, signal
 
 class Video(object):
 	
-	def __init__(self, id, tamaño, video, etiqueta=None):
+	def __init__(self, id, tamaño, video):
 		self.id = id
-		self.etiqueta = [etiqueta]
+		self.etiqueta = []
 		self.tamaño = tamaño
 		self.video = video
 
@@ -45,9 +45,12 @@ class Usuario(object):
 		
 
 #Creamos la lista de Videos y la rellenamos
-v1 = Video('VID01', '2', '10101', 'playa')
-v2 = Video('VID02','10', '10101', 'monte')
-v3 = Video('VID03', '8', '10101', 'familia')
+v1 = Video('VID01', '2', '10101')
+v2 = Video('VID02','10', '10101')
+v3 = Video('VID03', '8', '10101')
+v1.addEtiqueta('playa')
+v2.addEtiqueta('monte')
+v3.addEtiqueta('familia')
 
 #Se crean variables globales para saber qué usuario ha hecho login y el último id del vídeo
 ultimo_video_id = 0
@@ -154,13 +157,16 @@ def Tag(comando):
 
 def Fnd(comando):
 	lista = ''
-	idvideo = ''
-	etiqueta = comando[4:len(comando)]
+	etiqueta = comando[3:len(comando)]
 
-	for i in listaVideos:
-		if i.darEtiqueta().find(etiqueta) != -1:
-			lista += '#' + i.darID()
-	return "OK: Los videos con dicha etiqueta son ->" + lista
+	for i in usuario_actual.darVideos():
+		print(i.darEtiqueta())
+		print(etiqueta)
+		if etiqueta in i.darEtiqueta():
+			lista += i.darID()+'#'
+	if lista!='': 
+		lista=lista[:-1]
+	return "OK:"+ lista
 
 
 def Qit(comando):
