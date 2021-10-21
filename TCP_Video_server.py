@@ -69,11 +69,11 @@ def Log(comando):
     global usuario_actual
     #Estructura Log: LOGuser1#user1
     usuario_actual=None
-    if(len(comando)<7):
+    if(len(comando)<6):
         return'-ER03\r\n'
     else:
-        usuario=comando[4:comando.find("#")]
-        contra=comando[comando.find("#"):len(comando)]
+        usuario=comando[3:comando.find("#")]
+        contra=comando[comando.find("#")+1:len(comando)]
         found=False
         for user in listaUsuarios:
             if(user.darUsuario()==usuario and user.darContraseña()==contra):
