@@ -72,18 +72,23 @@ def Log(comando):
 	global usuario_actual
 	global login
     #Estructura Log: LOGuser1#user1
-	if(len(comando)<7):
+	if(len(comando)<6):
 		return'-ER03\r\n'
 	else:
+		if("#" not in comando):
+			return '-ER04\r\n'
 		datos = comando[3:].partition('#')
 		usuario=datos[0]
 		contra=datos[2]
 		found=False
+		
+
+		
 		for user in listaUsuarios:
 			if(user.darUsuario()==usuario and user.darContraseña()==contra):
 				found=True
 				usuario_actual=user
-				print(user)
+				
 				break
 		if(found==False):
 				return '-ER05\r\n'
@@ -109,13 +114,19 @@ def Put(comando):
 
 def Get(comando):
 	global usuario_actual
+	found=False
 	if len(comando) < 4:
-		return "Error 03"
-
-	for i in usuario_actual.darVideos:
-		if i.darID==comando:
-			return len(i.darVideo)+"#"+i.darVideo
-	return "-ER07"
+		return '-ER04\r\n'
+	id= comando[3:]
+	for video in usuario_actual.darVideos():
+		if video.darID()==id:
+			found=True
+			return ('+OK'+video.darTamaño()+'#'+video.darVideo()+'\r\n')
+			
+			
+	if(found==False):
+		return '-ER07\r\n'
+	
 
 def Tag(comando):
 	if len(comando) < 5:
@@ -153,7 +164,12 @@ def Fnd(comando):
 
 
 def Qit(comando):
-	return 0
+	if(len(comando)<3):
+		return'-ER01\r\n'
+	if(len(comando)>3):
+		return '-ER02\r\n'
+	
+	return '+OK\r\n'
 
 """
 def switch(case, comando):
@@ -196,25 +212,40 @@ while True:
 			if (login==False):
 				if (case=='LOG'):
 					buf2=Log(comando)
+					
 				else:
-					buf2='-ERCódigo erróneo dentro'
+					buf2='-ER01'
+					
 			else:
 				if (case=='LOG'):
 					buf2='-ER'
+					
 				elif (case=='PUT'):
 					buf2=Put(comando)
+					
 				elif (case=='GET'):
 					buf2=Get(comando)
+					
 				elif (case=='TAG'):
 					buf2=Tag(comando)
+					
 				elif (case=='FND'):
 					buf2=Fnd(comando)
+					
+				elif (case=='QIT'):
+					print( "Cierre de conexión de {}:{}.".format( dir_cli[0], dir_cli[1] ) )
+					buf2= Qit(comando)
+					
+					dialogo.close()
+					break
+					
 				else:
-					buf2='-ERCódigo erróneo'
+					buf2='-ER01'
+					
 
 			dialogo.sendall( buf2.encode())
 
-		print( "Solicitud de cierre de conexión recibida." )
-		dialogo.close()
+		
+		
 		exit( 0 )
 s.close()
