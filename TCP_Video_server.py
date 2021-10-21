@@ -79,7 +79,7 @@ def Log(comando):
             if(user.darUsuario()==usuario and user.darContraseña()==contra):
                 found=True
                 usuario_actual=user
-                print(user)
+                return '-OK\r\n' 
                 break
         if(found==False):
             return '-ER05\r\n'
