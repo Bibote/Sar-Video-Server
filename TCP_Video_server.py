@@ -54,9 +54,11 @@ v2.addEtiqueta('monte')
 v3.addEtiqueta('familia')
 
 #Se crean variables globales para saber qué usuario ha hecho login y el último id del vídeo
-ultimo_video_id = 0
+ultimo_video_id = 10000
 usuario_actual: Usuario
 login = False
+maxVideos = 100
+numVideos = 0
 
 u1 = Usuario('admin', 'admin')
 u2 = Usuario('ibai', 'ibai')
@@ -95,23 +97,16 @@ def Log(comando):
 				return '-ER05\r\n'
 		login = True
 		return '+OK\r\n'
-
+#partition en el LOG, id en el put
 def Put(comando):
 	global ultimo_video_id
 	global usuario_actual
-	if len(comando) < 6:
-		return "-ER03\r\n"
-
-	datos = comando[3:].partition('#')  #devuelve: ('tamaño','#','el vídeo en sí')
-	if (datos[0]=='' or datos[2]==''):
-		return ('-ER04\r\n')
-
-	vídeo = Video(ultimo_video_id,datos[0],datos [2])
-	ultimo_video_id+=1
-	if(usuario_actual.addVideo(vídeo)==-1):
+	if (numVideos==maxVideos):
 		return ('-ER06\r\n')
-	else:
-		return ('+OK' + str(ultimo_video_id-1) + '\r\n')
+	vídeo = Video(ultimo_video_id,len(comando),comando)
+	ultimo_video_id+=1
+	usuario_actual.addVideo(vídeo)
+	return ('+OK' + str(ultimo_video_id-1) + '\r\n')
 
 def Get(comando):
 	global usuario_actual
@@ -165,6 +160,7 @@ def Fnd(comando):
 			lista += i.darID()+'#'
 	if lista!='': 
 		lista=lista[:-1]
+
 	return "+OK:"+ lista
 
 
@@ -194,13 +190,36 @@ while True:
 	else:
 		s.close()
 		while True:
-			buf = dialogo.recv( 1024 )
-			if not buf:
-				break
-			comando = buf.decode()
+			
+			buf = dialogo.recv( 3 )
+			case = 'a'
+			if (login==True and buf.decode()[:3]=='PUT'):
+				tamaño=''
+				while True:
+					buf3=dialogo.recv(1)
+					if buf3.decode()=='#':
+						break
+					tamaño+=buf3.decode()
+				buf4=dialogo.recv(int(tamaño))
+				if (len(buf4.decode())==0):
+					buf2="-ER03\r\n"
+				else:
+					buf2=Put(buf4.decode())
+			else:
+				if len(buf)<3 :
+					print(buf.decode())
+					buf2='-ER01\r\n'
+				else :
+					comando = buf.decode()
+					buf=dialogo.recv(1024)
+					comando+=buf.decode()	
+					if not buf:
+						break
+					case = comando[0:3]
+				
 			
 			#Comprobamos los tres caracteres
-			case = comando[0:3]		
+					
 			if (login==False):
 				if (case=='LOG'):
 					buf2=Log(comando)
@@ -211,9 +230,6 @@ while True:
 			else:
 				if (case=='LOG'):
 					buf2='-ER'
-					
-				elif (case=='PUT'):
-					buf2=Put(comando)
 					
 				elif (case=='GET'):
 					buf2=Get(comando)
@@ -233,7 +249,7 @@ while True:
 					break
 					
 				else:
-					buf2='-ER01'
+					buf2='-ER01\r\n'
 					
 
 			dialogo.sendall( buf2.encode())
