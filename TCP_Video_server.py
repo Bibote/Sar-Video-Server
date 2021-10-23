@@ -177,7 +177,6 @@ def leer():
 			comando+=buf.decode()
 			return comando
 		if not recibido:
-			print("no recibido")
 			return ''
 
 
@@ -207,7 +206,7 @@ while True:
 		s.close()
 		login=False
 		while True:
-			
+			s.close()
 			buf = dialogo.recv( 3 )
 			case = 'e'
 			if len(buf.decode())==3:
@@ -220,7 +219,12 @@ while True:
 					comando=leer()
 					buf2=Log(comando)
 				elif(case=='QIT'):
-					exit( 0 )
+					if leer()=='':
+						print( "Cierre de conexión de {}:{}.".format( dir_cli[0], dir_cli[1] ) )
+						dialogo.close()
+						break
+					else:
+						buf2='-ER02\r\n'
 				else:
 					buf2='-ER01'		
 			elif (case=='PUT'):
@@ -245,8 +249,12 @@ while True:
 				comando=leer()
 				buf2=Fnd(comando)
 			elif(case=='QIT'):
-				exit(0)
-				break
+				if leer()=='':
+					print( "Cierre de conexión de {}:{}.".format( dir_cli[0], dir_cli[1] ) )
+					dialogo.close()
+					break
+				else:
+					buf2='-ER02\r\n'
 			else:
 				buf2='-ER01\r\n'
 			
@@ -254,5 +262,5 @@ while True:
 
 		
 		
-		
+		exit(0)	
 s.close()
