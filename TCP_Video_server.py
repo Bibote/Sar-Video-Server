@@ -5,10 +5,9 @@ import socket, os, signal, select
 
 class Video(object):
 	
-	def __init__(self, id, tamaño, video):
+	def __init__(self, id, video):
 		self.id = id
 		self.etiqueta = []
-		self.tamaño = tamaño
 		self.video = video
 
 	def darID(self):
@@ -16,9 +15,6 @@ class Video(object):
 	
 	def darEtiqueta(self):
 		return self.etiqueta
-	
-	def darTamaño(self):
-		return self.tamaño
 
 	def darVideo(self):
 		return self.video
@@ -45,9 +41,9 @@ class Usuario(object):
 		
 
 #Creamos la lista de Videos y la rellenamos
-v1 = Video('VID01', '2', '10101')
-v2 = Video('VID02','10', '10101')
-v3 = Video('VID03', '8', '10101')
+v1 = Video('VID01', '10101')
+v2 = Video('VID02', '10101')
+v3 = Video('VID03', '10101')
 
 v1.addEtiqueta('playa')
 v1.addEtiqueta('fino')
@@ -98,27 +94,28 @@ def Log(comando):
 				return '-ER05\r\n'
 		login = True
 		return '+OK\r\n'
-#partition en el LOG, id en el put
+
 def Put(comando):
 	global ultimo_video_id
 	global usuario_actual
 	if (numVideos==maxVideos):
 		return ('-ER06\r\n')
-	vídeo = Video(ultimo_video_id,len(comando),comando)
+	newVideo = Video(str(ultimo_video_id),comando)
 	ultimo_video_id+=1
-	usuario_actual.addVideo(vídeo)
+	usuario_actual.addVideo(newVideo)
 	return ('+OK' + str(ultimo_video_id-1) + '\r\n')
 
 def Get(comando):
 	global usuario_actual
 	found=False
+
 	if len(comando)!=5:
 		return '-ER04\r\n'
 
 	for video in usuario_actual.darVideos():
 		if video.darID()==comando:
 			found=True
-			return ('+OK'+video.darTamaño()+'#'+video.darVideo()+'\r\n')
+			return ('+OK'+str(len(video.darVideo()))+'#'+str(video.darVideo())+'\r\n')
 			
 			
 	if(found==False):
@@ -256,6 +253,7 @@ while True:
 				else:
 					buf2='-ER02\r\n'
 			else:
+				leer()
 				buf2='-ER01\r\n'
 			
 			dialogo.sendall( buf2.encode())
