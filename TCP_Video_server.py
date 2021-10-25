@@ -223,7 +223,7 @@ s.bind( ('', PORT) )
 s.listen( 5 )
 
 signal.signal(signal.SIGCHLD, signal.SIG_IGN)
-
+print("Servidor Encendido")
 while True:
 	dialogo, dir_cli = s.accept()
 	print( "Cliente conectado desde {}:{}.".format( dir_cli[0], dir_cli[1] ) )
@@ -237,12 +237,12 @@ while True:
 
 			#Se leen 3 bytes para saber el comando y se rechaza si son menos (-ER01)
 			buf = dialogo.recv( 3 )    
-			case = 'e'				   #Case por defecto por si no se ha leído nada
+			case = 'comando erroneo'				   #Case por defecto por si no se ha leído nada
 			if len(buf.decode())==3:
 				case=buf.decode()
 			else:
 				buf2='-ER01\r\n'     
-			
+			print("Cliente {}:{}".format( dir_cli[0], dir_cli[1] )+" comando en uso:"+case)
 
 			#-----------------------------------------------------------#
 			#    Diferenciar si se ha hecho login y/o si se hace put    #
@@ -310,12 +310,15 @@ while True:
 			#En caso de que se pida otro comando, se llama a la función y se devuelve el resultado
 			elif(case=='GET'):
 				comando=leer()
+				print("Cliente {}:{}".format( dir_cli[0], dir_cli[1] )+" comando en uso:"+case)
 				buf2=Get(comando)
 			elif(case=='TAG'):
 				comando=leer()
+				print("Cliente {}:{}".format( dir_cli[0], dir_cli[1] )+" comando en uso:"+case)
 				buf2=Tag(comando)
 			elif(case=='FND'):
 				comando=leer()
+				print("Cliente {}:{}".format( dir_cli[0], dir_cli[1] )+" comando en uso:"+case)
 				buf2=Fnd(comando)
 			elif(case=='QIT'):
 				if leer()=='':
