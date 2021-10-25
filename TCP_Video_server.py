@@ -217,9 +217,10 @@ s.bind( ('', PORT) )
 s.listen( 5 )
 
 signal.signal(signal.SIGCHLD, signal.SIG_IGN)
-
+print("Servidor Encendido")
 while True:
 	dialogo, dir_cli = s.accept()
+	print( "Cliente conectado desde {}:{}.".format( dir_cli[0], dir_cli[1] ) )
 	if os.fork():
 		dialogo.close()
 	else:
@@ -228,19 +229,23 @@ while True:
 		while True:
 			s.close()
 			buf = dialogo.recv( 3 )    #Se leen los primeros 3 bytes para saber el comando
-			case = 'e'
+			case = 'comando erroneo'
+			
 			if len(buf.decode())==3:
 				case=buf.decode()
+
 			else:
 				buf2='-ER01\r\n'       #Si se han leído menos, es un comando desconocido
-				
+			print("Cliente {}:{}".format( dir_cli[0], dir_cli[1] )+" comando en uso:"+case)
 			if (login==False):   			#En caso de que no se haya hecho login hay dos comandos permitidos: LOG y QIT
 				if (case=='LOG'): 			#Si es LOG, recibe el resto del mensaje y llama a Log, que devuelve +OK o -ER
 					comando=leer()
+					print("Cliente {}:{}".format( dir_cli[0], dir_cli[1] )+" parametros del comando "+case+":"+comando)
 					buf2=Log(comando)
 				elif(case=='QIT'): 			#Si es QIT, se cierra la conexión TCP
 					if leer()=='':
 						dialogo.close()
+						print( "Cierre de conexión de {}:{}.".format( dir_cli[0], dir_cli[1] ) )
 						break
 					else:
 						buf2='-ER02\r\n'	#Si se ha hecho QIT seguido de más datos, se devuelve el error de comando inesperado
@@ -279,28 +284,33 @@ while True:
 					if video:
 						buf4=dialogo.recv(numero)
 						if(buf4.decode()==''):
-							buf2='-ER03\r\n'
+							buf2='-ER03\r\n'	
 						else:
 							buf2=Put(buf4.decode())
 					else:
 						buf2='-ER03\r\n'
+				
 
-
+			
 					
 			
 			#En caso de que se pida otro comando, se llama a la función y se devuelve el resultado
 			elif(case=='GET'):
 				comando=leer()
+				print("Cliente {}:{}".format( dir_cli[0], dir_cli[1] )+" parametros del comando "+case+":"+comando)
 				buf2=Get(comando)
 			elif(case=='TAG'):
 				comando=leer()
+				print("Cliente {}:{}".format( dir_cli[0], dir_cli[1] )+" parametros del comando "+case+":"+comando)
 				buf2=Tag(comando)
 			elif(case=='FND'):
 				comando=leer()
-				buf2=Fnd(comando)
+				print("Cliente {}:{}".format( dir_cli[0], dir_cli[1] )+" parametros del comando "+case+":"+comando)
+				buf2=Fnd(comando)			
 			elif(case=='QIT'):
 				if leer()=='':
 					dialogo.close()
+					print( "Cierre de conexión de {}:{}.".format( dir_cli[0], dir_cli[1] ) )
 					break
 				else:
 					buf2='-ER02\r\n'
@@ -309,7 +319,6 @@ while True:
 			leer()
 			dialogo.sendall( buf2.encode())
 
-		
-		
 		exit(0)	
+		
 s.close()
