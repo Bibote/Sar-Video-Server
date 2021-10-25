@@ -3,6 +3,9 @@
 
 import socket, os, signal, select
 
+#---------------------------------------------#
+#        		 CLASES EXTRA	   		      #
+#---------------------------------------------#
 class Video(object):  #Clase que representa los vídeos. Se crea el vídeo sin tags y con un id secuencial que empieza por el 10000
 	
 	def __init__(self, id, video):
@@ -39,26 +42,22 @@ class Usuario(object): #Clase que representa al usuario. Cada usuario tiene un i
 	def addVideo(self, video):
 		self.videos.append(video)
 		
+#---------------------------------------------#
+#     INICIALIZACIONES PARA LAS PRUEBAS	      #
+#---------------------------------------------#
 
-#Creamos vídeos por defecto para probar las funciones
+#Creamos vídeos por defecto 
 v1 = Video('VID01', '10101')
 v2 = Video('VID02', '10101')
 v3 = Video('VID03', '10101')
 
-#Añadimos etiquetas para probar las funciones
+#Añadimos etiquetas 
 v1.addEtiqueta('playa')
 v1.addEtiqueta('fino')
 v2.addEtiqueta('monte')
 v3.addEtiqueta('familia')
 
-#Se crean variables globales
-ultimo_video_id = 10000  	#Guarda el útlimo id para la función de put
-usuario_actual: Usuario 	#Guarda qué usuario ha hecho login
-login = False 				#Guarda si se ha hecho login aún
-maxVideos = 100				#Variable para simular el código ER06 al quedarse sin espacio el servidor
-numVideos = 0				#Cantidad de vídeos actuales
-
-#Creamos usuarios para probar. El servidor no se encarga de esto, pero para probar el protocolo usamos estos usuarios
+#Creamos usuarios. El servidor no se encarga de esto, pero para probar el protocolo usamos estos usuarios
 u1 = Usuario('admin', 'admin')
 u2 = Usuario('ibai', 'ibai')
 u3 = Usuario('olatz', 'olatz')
@@ -71,9 +70,22 @@ u1.addVideo(v2)
 u3.addVideo(v3)
 
 #---------------------------------------------#
+#              VARIABLES GLOBALES             #
 #---------------------------------------------#
 
-#LISTA DE COMANDOS DEL SERVIDOR
+ultimo_video_id = 10000  	#Guarda el útlimo id para la función de put
+usuario_actual: Usuario 	#Guarda qué usuario ha hecho login
+login = False 				#Guarda si se ha hecho login aún
+maxVideos = 100				#Variable para simular el código ER06 al quedarse sin espacio el servidor
+numVideos = 0				#Cantidad de vídeos actuales
+
+
+
+
+#---------------------------------------------#
+#        LISTA DE COMANDOS DEL SERVIDOR       #
+#---------------------------------------------#
+
 def Log(comando):      #Estructura Log: LOGuser1#user1
 	global usuario_actual
 	global login
@@ -85,7 +97,7 @@ def Log(comando):      #Estructura Log: LOGuser1#user1
 	else: 					#Ya que se esperan dos parámetros, si no encuentra '#' es el formato incorrecto
 		if("#" not in comando):
 			return '-ER04\r\n'
-		datos = comando.partition('#') 		#Devuelve {usuario#contraseña}
+		datos = comando.partition('#') 		#Lee en formato {usuario#contraseña}
 		if datos[0]=='' or datos[2]=='': 	#Si usuario o contraseña son vacíos, faltan parámetros
 			return'-ER03\r\n'
 		usuario=datos[0]
@@ -199,8 +211,12 @@ def leer():  #Función necesaria para más adelante, que espera un segundo a rec
 		if not recibido:
 			return ''
 
+#---------------------------------------------#
+#        CONEXIÓN Y PROCESOS HIJOS  	      #
+#---------------------------------------------#
+
 PORT = 50004
-   
+
 s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
 
 s.bind( ('', PORT) )
@@ -218,14 +234,22 @@ while True:
 		login=False
 		while True:
 			s.close()
-			buf = dialogo.recv( 3 )    #Se leen los primeros 3 bytes para saber el comando
-			case = 'e'
+
+			#Se leen 3 bytes para saber el comando y se rechaza si son menos (-ER01)
+			buf = dialogo.recv( 3 )    
+			case = 'e'				   #Case por defecto por si no se ha leído nada
 			if len(buf.decode())==3:
 				case=buf.decode()
 			else:
-				buf2='-ER01\r\n'       #Si se han leído menos, es un comando desconocido
-				
-			if (login==False):   			#En caso de que no se haya hecho login hay dos comandos permitidos: LOG y QIT
+				buf2='-ER01\r\n'     
+			
+
+			#-----------------------------------------------------------#
+			#    Diferenciar si se ha hecho login y/o si se hace put    #
+			#-----------------------------------------------------------#
+
+			#SIN LOGIN
+			if (login==False):   			#Dos comandos permitidos: LOG y QIT
 				if (case=='LOG'): 			#Si es LOG, recibe el resto del mensaje y llama a Log, que devuelve +OK o -ER
 					comando=leer()
 					buf2=Log(comando)
@@ -238,41 +262,45 @@ while True:
 						buf2='-ER02\r\n'	#Si se ha hecho QIT seguido de más datos, se devuelve el error de comando inesperado
 				else:
 					buf2='-ER01'		
-			elif (case=='PUT'):				#Si ya se ha hecho login y se quiere hacer PUT, 
-				numero=0							#es necesario conocer primero el tamaño del vídeo para luego leer esa cantidad de bytes
+
+			#LOGIN Y PUT
+			elif (case=='PUT'):				
+				numero=0						#Es necesario conocer primero el tamaño del vídeo para luego leer esa cantidad de bytes
 				encontrado = False
 				tamaño=''						#Para saber el tamaño, leemos byte a byte hasta encontrarnos con '#'
 												#Vamos añadiendo los bytes leídos a 'tamaño'
-				buf2="hola"								#Si no encuentra '#' y no queda nada por leer, significa que falta un parámetro. Esto se hace mirando 'encontrado'
+												#Si no encuentra '#' y no queda nada por leer, significa que falta un parámetro. Esto se hace mirando 'encontrado'
 				while True:
 					size, _, _ = select.select( [ dialogo ], [], [],1 )
 					if size:
 						buf3=dialogo.recv(1)
 						
 						tamaño+=buf3.decode()
-						if buf3.decode()=='#':
+						if buf3.decode()=='#':	#Ha encontrado '#', por lo que tiene el tamaño
 							encontrado=True
 							break
-
-						
-					else:
+					else:						#No recibe el tamaño, por lo que falta parámetro
+						buf2='-ER03\r\n'
 						break
+
 				if encontrado==True:
 					tamaño=tamaño[:-1]
-					print(tamaño)
-					if str.isdigit(tamaño):
+					if str.isdigit(tamaño):		#Comprueba que el tamaño es un dígito
 						numero=int(tamaño)
-					else:
+					else:						#Si no es dígito no lee nada
 						numero=0
 						buf2='-ER04\r\n'
-				else:
+				else:							#Si no hay '#' tampoco lee nada
 					numero=0
-				print(numero)
+					
 				if(numero!=0):
-					video, _, _ = select.select( [ dialogo ], [], [],1 )
+					video, _, _ = select.select( [ dialogo ], [], [],1 )	#Lee el número de bytes que forman el vídeo
 					if video:
-						buf3=dialogo.recv(numero)
-						buf2=Put(buf3.decode())
+						buf4=dialogo.recv(numero)
+						if buf4.decode()=='':
+							buf2='-ER03\r\n'	#Falta el vídeo
+						else:
+							buf2=Put(buf4.decode())
 					else:
 						buf2='-ER03\r\n'
 
