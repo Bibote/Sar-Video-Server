@@ -3,7 +3,7 @@
 
 import socket, os, signal, select
 
-class Video(object):
+class Video(object):  #Clase que representa los vídeos. Se crea el vídeo sin tags y con un id secuencial que empieza por el 10000
 	
 	def __init__(self, id, video):
 		self.id = id
@@ -22,7 +22,7 @@ class Video(object):
 	def addEtiqueta(self,etiqueta):
 		self.etiqueta.append(etiqueta)
 
-class Usuario(object):
+class Usuario(object): #Clase que representa al usuario. Cada usuario tiene un id y su contraseña
 
 	def __init__(self, usuario, contraseña):
 		self.usuario = usuario
@@ -40,32 +40,38 @@ class Usuario(object):
 		self.videos.append(video)
 		
 
-#Creamos la lista de Videos y la rellenamos
+#Creamos vídeos por defecto para probar las funciones
 v1 = Video('VID01', '10101')
 v2 = Video('VID02', '10101')
 v3 = Video('VID03', '10101')
 
+#Añadimos etiquetas para probar las funciones
 v1.addEtiqueta('playa')
 v1.addEtiqueta('fino')
 v2.addEtiqueta('monte')
 v3.addEtiqueta('familia')
 
-#Se crean variables globales para saber qué usuario ha hecho login y el último id del vídeo
-ultimo_video_id = 10000
-usuario_actual: Usuario
-login = False
-maxVideos = 100
-numVideos = 0
+#Se crean variables globales
+ultimo_video_id = 10000  	#Guarda el útlimo id para la función de put
+usuario_actual: Usuario 	#Guarda qué usuario ha hecho login
+login = False 				#Guarda si se ha hecho login aún
+maxVideos = 100				#Variable para simular el código ER06 al quedarse sin espacio el servidor
+numVideos = 0				#Cantidad de vídeos actuales
 
+#Creamos usuarios para probar. El servidor no se encarga de esto, pero para probar el protocolo usamos estos usuarios
 u1 = Usuario('admin', 'admin')
 u2 = Usuario('ibai', 'ibai')
 u3 = Usuario('olatz', 'olatz')
 
+listaUsuarios = [u1, u2, u3]
+
+#Se añaden vídeos a los usuarios
 u1.addVideo(v1)
 u1.addVideo(v2)
 u3.addVideo(v3)
 
-listaUsuarios = [u1, u2, u3]
+#---------------------------------------------#
+#---------------------------------------------#
 
 #LISTA DE COMANDOS DEL SERVIDOR
 def Log(comando):
@@ -175,15 +181,6 @@ def leer():
 			return comando
 		if not recibido:
 			return ''
-
-
-		
-		
-
-
-
-
-
 
 PORT = 50004
 
