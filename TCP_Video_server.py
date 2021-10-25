@@ -235,24 +235,20 @@ while True:
 												#Vamos añadiendo los bytes leídos a 'tamaño'
 												#Si no encuentra '#' y no queda nada por leer, significa que falta un parámetro. Esto se hace mirando 'encontrado'
 				while True:
-					recibido, _, _ = select.select( [ dialogo ], [], [],1 )
-		
-					if recibido:                      #Si hay mensaje va leyendo uno a uno, busca si hay #, llama a put
-						buf3=dialogo.recv(1)
-						if buf3.decode()=='#':
-							encontrado=True
-							break
-						tamaño+=buf3.decode()	
-						if encontrado==True:
-							buf4=dialogo.recv(int(tamaño))
-							if (len(buf4.decode())==0):
-								buf2="-ER03\r\n"
-							else:
-								buf2=Put(buf4.decode())
-						else: 
-							buf2 = buf2="-ER03\r\n"
-					if not recibido:                 #Si no hay mensaje falta parámetro
+					buf3=dialogo.recv(1)
+					if buf3.decode()=='#':
+						encontrado=True
+						break
+					tamaño+=buf3.decode()
+				
+				if encontrado==True:
+					buf4=dialogo.recv(int(tamaño))
+					if (len(buf4.decode())==0):
 						buf2="-ER03\r\n"
+					else:
+						buf2=Put(buf4.decode())
+				else: 
+					buf2 = buf2="-ER03\r\n"
 			
 			#En caso de que se pida otro comando, se llama a la función y se devuelve el resultado
 			elif(case=='GET'):
