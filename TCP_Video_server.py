@@ -154,7 +154,8 @@ def Tag(comando):  			#Estructura Tag: TAGidvideo o TAGidvideo#tag
 		return "-ER08\r\n"
 		
 	
-	
+	#Si son más, se añade la etiqueta al vídeo con dicho id
+	#En ámbos casos, si no está el vídeo, se devuelve -ER08
 	etiquetaVideo = comando[comando.find("#")+1:len(comando)]
 	for i in usuario_actual.darVideos():
 		if i.darID() == idvideo:
@@ -162,10 +163,11 @@ def Tag(comando):  			#Estructura Tag: TAGidvideo o TAGidvideo#tag
 			return "+OK\r\n"
 	return "-ER08\r\n"
 
-def Fnd(comando):
+def Fnd(comando): #Estructura Fnd: FNDtag
 	lista = ''
 	
-
+	#Recorre los vídeos y si alguno tiene la etiqueta se añade a la lista
+	#Finalmente, se devuelve +OK y la lista, separando los vídeos con #
 	for i in usuario_actual.darVideos():
 		print(i.darEtiqueta())
 		print(comando)
@@ -175,7 +177,7 @@ def Fnd(comando):
 		lista=lista[:-1]
 
 	return "+OK:"+ lista+"\r\n"
-def leer():
+def leer():  #Función necesaria para más adelante, que espera un segundo a recibir un mensaje del cliente
 	comando=''
 	while True:
 		recibido, _, _ = select.select( [ dialogo ], [], [],1 )
@@ -206,38 +208,53 @@ while True:
 		login=False
 		while True:
 			s.close()
-			buf = dialogo.recv( 3 )
+			buf = dialogo.recv( 3 )    #Se leen los primeros 3 bytes para saber el comando
 			case = 'e'
 			if len(buf.decode())==3:
 				case=buf.decode()
 			else:
-				buf2='-ER01\r\n'
+				buf2='-ER01\r\n'       #Si se han leído menos, es un comando desconocido
 				
-			if (login==False):
-				if (case=='LOG'):
+			if (login==False):   			#En caso de que no se haya hecho login hay dos comandos permitidos: LOG y QIT
+				if (case=='LOG'): 			#Si es LOG, recibe el resto del mensaje y llama a Log, que devuelve +OK o -ER
 					comando=leer()
 					buf2=Log(comando)
-				elif(case=='QIT'):
+				elif(case=='QIT'): 			#Si es QIT, se cierra la conexión TCP
 					if leer()=='':
 						print( "Cierre de conexión de {}:{}.".format( dir_cli[0], dir_cli[1] ) )
 						dialogo.close()
 						break
 					else:
-						buf2='-ER02\r\n'
+						buf2='-ER02\r\n'	#Si se ha hecho QIT seguido de más datos, se devuelve el error de comando inesperado
 				else:
 					buf2='-ER01'		
-			elif (case=='PUT'):
-				tamaño=''
+			elif (case=='PUT'):				#Si ya se ha hecho login y se quiere hacer PUT, 
+											#es necesario conocer primero el tamaño del vídeo para luego leer esa cantidad de bytes
+				encontrado = False
+				tamaño=''						#Para saber el tamaño, leemos byte a byte hasta encontrarnos con '#'
+												#Vamos añadiendo los bytes leídos a 'tamaño'
+												#Si no encuentra '#' y no queda nada por leer, significa que falta un parámetro. Esto se hace mirando 'encontrado'
 				while True:
-					buf3=dialogo.recv(1)
-					if buf3.decode()=='#':
-						break
-					tamaño+=buf3.decode()
-				buf4=dialogo.recv(int(tamaño))
-				if (len(buf4.decode())==0):
-					buf2="-ER03\r\n"
-				else:
-					buf2=Put(buf4.decode())
+					recibido, _, _ = select.select( [ dialogo ], [], [],1 )
+		
+					if recibido:                      #Si hay mensaje va leyendo uno a uno, busca si hay #, llama a put
+						buf3=dialogo.recv(1)
+						if buf3.decode()=='#':
+							encontrado=True
+							break
+						tamaño+=buf3.decode()	
+						if encontrado==True:
+							buf4=dialogo.recv(int(tamaño))
+							if (len(buf4.decode())==0):
+								buf2="-ER03\r\n"
+							else:
+								buf2=Put(buf4.decode())
+						else: 
+							buf2 = buf2="-ER03\r\n"
+					if not recibido:                 #Si no hay mensaje falta parámetro
+						buf2="-ER03\r\n"
+			
+			#En caso de que se pida otro comando, se llama a la función y se devuelve el resultado
 			elif(case=='GET'):
 				comando=leer()
 				buf2=Get(comando)
@@ -254,7 +271,7 @@ while True:
 					break
 				else:
 					buf2='-ER02\r\n'
-			else:
+			else:  				#En caso de que se lea mensaje vacío, o un comando desconocido, se devuelve -ER01
 				leer()
 				buf2='-ER01\r\n'
 			
