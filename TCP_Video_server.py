@@ -124,6 +124,8 @@ def Get(comando):				#Estructura Put: PUTidvideo
 		return '-ER04\r\n'
 	if'#' in comando:
 		return '-ER04\r\n'
+	if comando=='':
+		return '-ER03\r\n'
 	if len(comando)!=5:			#Si el id no tiene exáctamente 5 carácteres es formato incorrecto
 		return '-ER04\r\n'
 
@@ -144,13 +146,13 @@ def Tag(comando):  			#Estructura Tag: TAGidvideo o TAGidvideo#tag
 	if' ' in comando:
 		return '-ER04\r\n'
 	global usuario_actual
-	if len(comando) < 5:	#Si es demasiado corto es que faltan parámetros
-		return "-ER03\r\n"
+	if len(comando) < 5:	#Si es demasiado corto es que esta incorrecto el parametro idvideo!=5
+		return "-ER04\r\n"
 	
 
 	idvideo = comando[0:5]
 	if len(comando) == 5:  #Si son solo 5 bytes, quiere comprobar los tags del video
-		if '#' not in comando:
+		if '#' in comando:
 			return '-ER04\r\n'
 		for i in usuario_actual.darVideos():
 			if i.darID() == idvideo:
@@ -164,18 +166,26 @@ def Tag(comando):  			#Estructura Tag: TAGidvideo o TAGidvideo#tag
 					return "+OK"+lista+"\r\n"	
 		return "-ER08\r\n"
 		
-	
-	#Si son más, se añade la etiqueta al vídeo con dicho id
-	#En ámbos casos, si no está el vídeo, se devuelve -ER08
-	etiquetaVideo = comando[comando.find("#")+1:len(comando)]
-	for i in usuario_actual.darVideos():
-		if i.darID() == idvideo:
-			i.addEtiqueta(etiquetaVideo)
-			return "+OK\r\n"
-	return "-ER08\r\n"
+	else:
+		if '#' not in comando:
+			return '-ER04\r\n'
+		#Si son más, se añade la etiqueta al vídeo con dicho id
+		#En ámbos casos, si no está el vídeo, se devuelve -ER08
+		etiquetaVideo = comando[comando.find("#")+1:len(comando)]
+		if'#' in etiquetaVideo:
+			return '-ER04\r\n'
+		for i in usuario_actual.darVideos():
+			if i.darID() == idvideo:
+				i.addEtiqueta(etiquetaVideo)
+				return "+OK\r\n"
+		return "-ER08\r\n"
 
 def Fnd(comando): #Estructura Fnd: FNDtag
 	lista = ''
+	if' ' in comando:
+		return '-ER04\r\n'
+	if'#' in comando:
+		return '-ER04\r\n'
 	
 	#Recorre los vídeos y si alguno tiene la etiqueta se añade a la lista
 	#Finalmente, se devuelve +OK y la lista, separando los vídeos con #
@@ -243,7 +253,7 @@ while True:
 				encontrado = False
 				tamaño=''						#Para saber el tamaño, leemos byte a byte hasta encontrarnos con '#'
 												#Vamos añadiendo los bytes leídos a 'tamaño'
-				buf2="hola"								#Si no encuentra '#' y no queda nada por leer, significa que falta un parámetro. Esto se hace mirando 'encontrado'
+											#Si no encuentra '#' y no queda nada por leer, significa que falta un parámetro. Esto se hace mirando 'encontrado'
 				while True:
 					size, _, _ = select.select( [ dialogo ], [], [],1 )
 					if size:
@@ -251,15 +261,14 @@ while True:
 						
 						tamaño+=buf3.decode()
 						if buf3.decode()=='#':
-							encontrado=True
-							break
 
-						
+							encontrado=True
+							break	
 					else:
+						buf2='-ER03\r\n'
 						break
 				if encontrado==True:
 					tamaño=tamaño[:-1]
-					print(tamaño)
 					if str.isdigit(tamaño):
 						numero=int(tamaño)
 					else:
@@ -267,12 +276,15 @@ while True:
 						buf2='-ER04\r\n'
 				else:
 					numero=0
-				print(numero)
 				if(numero!=0):
 					video, _, _ = select.select( [ dialogo ], [], [],1 )
 					if video:
-						buf3=dialogo.recv(numero)
-						buf2=Put(buf3.decode())
+						buf4=dialogo.recv(numero)
+						print(buf4.decode())
+						if(buf4.decode()==''):
+							buf2='-ER03\r\n'
+						else:
+							buf2=Put(buf4.decode())
 					else:
 						buf2='-ER03\r\n'
 

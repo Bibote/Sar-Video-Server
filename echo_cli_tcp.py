@@ -16,8 +16,6 @@ s.connect( dir_serv )
 print( "Introduce el comando:" )
 while True:
 	mensaje = input()
-	if not mensaje:
-		break
 	mensaje=mensaje+"\r\n"
 	s.sendall( mensaje.encode())
 
