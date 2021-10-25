@@ -200,7 +200,7 @@ def leer():  #Función necesaria para más adelante, que espera un segundo a rec
 			return ''
 
 PORT = 50004
-
+   
 s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
 
 s.bind( ('', PORT) )
