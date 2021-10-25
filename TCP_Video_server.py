@@ -220,7 +220,6 @@ signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
 while True:
 	dialogo, dir_cli = s.accept()
-	print( "Cliente conectado desde {}:{}.".format( dir_cli[0], dir_cli[1] ) )
 	if os.fork():
 		dialogo.close()
 	else:
@@ -241,7 +240,6 @@ while True:
 					buf2=Log(comando)
 				elif(case=='QIT'): 			#Si es QIT, se cierra la conexión TCP
 					if leer()=='':
-						print( "Cierre de conexión de {}:{}.".format( dir_cli[0], dir_cli[1] ) )
 						dialogo.close()
 						break
 					else:
@@ -280,7 +278,6 @@ while True:
 					video, _, _ = select.select( [ dialogo ], [], [],1 )
 					if video:
 						buf4=dialogo.recv(numero)
-						print(buf4.decode())
 						if(buf4.decode()==''):
 							buf2='-ER03\r\n'
 						else:
@@ -303,7 +300,6 @@ while True:
 				buf2=Fnd(comando)
 			elif(case=='QIT'):
 				if leer()=='':
-					print( "Cierre de conexión de {}:{}.".format( dir_cli[0], dir_cli[1] ) )
 					dialogo.close()
 					break
 				else:
