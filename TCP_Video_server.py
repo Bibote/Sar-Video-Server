@@ -74,51 +74,56 @@ u3.addVideo(v3)
 #---------------------------------------------#
 
 #LISTA DE COMANDOS DEL SERVIDOR
-def Log(comando):
+def Log(comando):      #Estructura Log: LOGuser1#user1
 	global usuario_actual
 	global login
-    #Estructura Log: LOGuser1#user1
-	if(len(comando)<2):
+
+	if(len(comando)<2):  	#Si no hay al menos tres bytes, significa que falta un parámetro
 		return'-ER03\r\n'
-	else:
+	else: 					#Ya que se esperan dos parámetros, si no encuentra '#' es el formato incorrecto
 		if("#" not in comando):
 			return '-ER04\r\n'
-		datos = comando.partition('#')
+		datos = comando.partition('#') 		#Devuelve {usuario#contraseña}
+		if datos[0]=='' or datos[2]=='': 	#Si usuario o contraseña son vacíos, faltan parámetros
+			return'-ER03\r\n'
 		usuario=datos[0]
 		contra=datos[2]
 		found=False
 		
-
-		
-		for user in listaUsuarios:
+		for user in listaUsuarios:		#Recorre la lista de usuarios para encontrar el que coincida con usuario y contraseña
 			if(user.darUsuario()==usuario and user.darContraseña()==contra):
 				found=True
 				usuario_actual=user
 				
 				break
-		if(found==False):
+		if(found==False):				#Si no se encuentra salta -ER05
 				return '-ER05\r\n'
 		login = True
 		return '+OK\r\n'
 
-def Put(comando):
+def Put(comando):				#Estructura Put: PUTtamaño#video
 	global ultimo_video_id
 	global usuario_actual
-	if (numVideos==maxVideos):
+	if (numVideos==maxVideos):	#Si no hay espacio en el servidor
 		return ('-ER06\r\n')
-	newVideo = Video(str(ultimo_video_id),comando)
+	
+	#No hacemos tantas comprobaciones de si el comando está bien porque se hacen más abajo
+	newVideo = Video(str(ultimo_video_id),comando)	#Se construye el vídeo, se añade al usuario y se suma el último id
 	ultimo_video_id+=1
 	usuario_actual.addVideo(newVideo)
-	return ('+OK' + str(ultimo_video_id-1) + '\r\n')
+	return ('+OK' + str(ultimo_video_id-1) + '\r\n') #Devuelve +OKidVideo
 
-def Get(comando):
+def Get(comando):				#Estructura Put: PUTidvideo
 	global usuario_actual
 	found=False
 
-	if len(comando)!=5:
+	if len(comando)!=5:			#Si el id no tiene exáctamente 5 carácteres es formato incorrecto
 		return '-ER04\r\n'
 
-	for video in usuario_actual.darVideos():
+	#Busca el vídeo en el usuario que ha hecho login
+	#Si está devuelve +OKtamaño#vídeo
+	#Si no está devuelve -ER07
+	for video in usuario_actual.darVideos(): 
 		if video.darID()==comando:
 			found=True
 			return ('+OK'+str(len(video.darVideo()))+'#'+str(video.darVideo())+'\r\n')
@@ -128,14 +133,14 @@ def Get(comando):
 		return '-ER07\r\n'
 	
 
-def Tag(comando):
+def Tag(comando):  			#Estructura Tag: TAGidvideo o TAGidvideo#tag
 	global usuario_actual
-	if len(comando) < 5:
+	if len(comando) < 5:	#Si es demasiado corto es que faltan parámetros
 		return "-ER03\r\n"
 	
 
 	idvideo = comando[0:5]
-	if len(comando) == 5:
+	if len(comando) == 5:  #Si son solo 5 bytes, quiere comprobar los tags del video
 		for i in usuario_actual.darVideos():
 			if i.darID() == idvideo:
 				lista=''
