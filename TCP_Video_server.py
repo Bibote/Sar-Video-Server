@@ -77,6 +77,8 @@ u3.addVideo(v3)
 def Log(comando):      #Estructura Log: LOGuser1#user1
 	global usuario_actual
 	global login
+	if' ' in comando:
+		return '-ER04\r\n'
 
 	if(len(comando)<2):  	#Si no hay al menos tres bytes, significa que falta un parámetro
 		return'-ER03\r\n'
@@ -102,6 +104,8 @@ def Log(comando):      #Estructura Log: LOGuser1#user1
 		return '+OK\r\n'
 
 def Put(comando):				#Estructura Put: PUTtamaño#video
+	if' ' in comando:
+		return '-ER04\r\n'
 	global ultimo_video_id
 	global usuario_actual
 	if (numVideos==maxVideos):	#Si no hay espacio en el servidor
@@ -116,7 +120,10 @@ def Put(comando):				#Estructura Put: PUTtamaño#video
 def Get(comando):				#Estructura Put: PUTidvideo
 	global usuario_actual
 	found=False
-
+	if' ' in comando:
+		return '-ER04\r\n'
+	if'#' in comando:
+		return '-ER04\r\n'
 	if len(comando)!=5:			#Si el id no tiene exáctamente 5 carácteres es formato incorrecto
 		return '-ER04\r\n'
 
@@ -134,6 +141,8 @@ def Get(comando):				#Estructura Put: PUTidvideo
 	
 
 def Tag(comando):  			#Estructura Tag: TAGidvideo o TAGidvideo#tag
+	if' ' in comando:
+		return '-ER04\r\n'
 	global usuario_actual
 	if len(comando) < 5:	#Si es demasiado corto es que faltan parámetros
 		return "-ER03\r\n"
@@ -141,6 +150,8 @@ def Tag(comando):  			#Estructura Tag: TAGidvideo o TAGidvideo#tag
 
 	idvideo = comando[0:5]
 	if len(comando) == 5:  #Si son solo 5 bytes, quiere comprobar los tags del video
+		if '#' not in comando:
+			return '-ER04\r\n'
 		for i in usuario_actual.darVideos():
 			if i.darID() == idvideo:
 				lista=''
@@ -183,6 +194,7 @@ def leer():  #Función necesaria para más adelante, que espera un segundo a rec
 		if recibido:
 			buf=dialogo.recv(1024)
 			comando+=buf.decode()
+			comando=comando[:-2]
 			return comando
 		if not recibido:
 			return ''
@@ -227,26 +239,45 @@ while True:
 				else:
 					buf2='-ER01'		
 			elif (case=='PUT'):				#Si ya se ha hecho login y se quiere hacer PUT, 
-											#es necesario conocer primero el tamaño del vídeo para luego leer esa cantidad de bytes
+				numero=0							#es necesario conocer primero el tamaño del vídeo para luego leer esa cantidad de bytes
 				encontrado = False
 				tamaño=''						#Para saber el tamaño, leemos byte a byte hasta encontrarnos con '#'
 												#Vamos añadiendo los bytes leídos a 'tamaño'
-												#Si no encuentra '#' y no queda nada por leer, significa que falta un parámetro. Esto se hace mirando 'encontrado'
+				buf2="hola"								#Si no encuentra '#' y no queda nada por leer, significa que falta un parámetro. Esto se hace mirando 'encontrado'
 				while True:
-					buf3=dialogo.recv(1)
-					if buf3.decode()=='#':
-						encontrado=True
-						break
-					tamaño+=buf3.decode()
-				
-				if encontrado==True:
-					buf4=dialogo.recv(int(tamaño))
-					if (len(buf4.decode())==0):
-						buf2="-ER03\r\n"
+					size, _, _ = select.select( [ dialogo ], [], [],1 )
+					if size:
+						buf3=dialogo.recv(1)
+						
+						tamaño+=buf3.decode()
+						if buf3.decode()=='#':
+							encontrado=True
+							break
+
+						
 					else:
-						buf2=Put(buf4.decode())
-				else: 
-					buf2 = buf2="-ER03\r\n"
+						break
+				if encontrado==True:
+					tamaño=tamaño[:-1]
+					print(tamaño)
+					if str.isdigit(tamaño):
+						numero=int(tamaño)
+					else:
+						numero=0
+						buf2='-ER04\r\n'
+				else:
+					numero=0
+				print(numero)
+				if(numero!=0):
+					video, _, _ = select.select( [ dialogo ], [], [],1 )
+					if video:
+						buf3=dialogo.recv(numero)
+						buf2=Put(buf3.decode())
+					else:
+						buf2='-ER03\r\n'
+
+
+					
 			
 			#En caso de que se pida otro comando, se llama a la función y se devuelve el resultado
 			elif(case=='GET'):
@@ -266,9 +297,8 @@ while True:
 				else:
 					buf2='-ER02\r\n'
 			else:  				#En caso de que se lea mensaje vacío, o un comando desconocido, se devuelve -ER01
-				leer()
 				buf2='-ER01\r\n'
-			
+			leer()
 			dialogo.sendall( buf2.encode())
 
 		

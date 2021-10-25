@@ -18,7 +18,8 @@ while True:
 	mensaje = input()
 	if not mensaje:
 		break
-	s.sendall( mensaje.encode() )
+	mensaje=mensaje+"\r\n"
+	s.sendall( mensaje.encode())
 
 	buf = s.recv( 1024 )
 	print( buf.decode() )
