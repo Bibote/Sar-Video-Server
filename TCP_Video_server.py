@@ -47,15 +47,17 @@ class Usuario(object): #Clase que representa al usuario. Cada usuario tiene un i
 #---------------------------------------------#
 
 #Creamos vídeos por defecto 
-v1 = Video('VID01', '10101')
-v2 = Video('VID02', '10101')
-v3 = Video('VID03', '10101')
+v1 = Video('VID01', 'GFDGDFSGFDG')
+v2 = Video('VID02', 'VIDEO2SOBRELAMONTANA')
+v3 = Video('VID03', 'VIDEO3SOBREFAIMLIA')
+v4 = Video('VID04', 'BuenVideoDeSockets')
 
 #Añadimos etiquetas 
 v1.addEtiqueta('playa')
 v1.addEtiqueta('fino')
 v2.addEtiqueta('monte')
 v3.addEtiqueta('familia')
+v4.addEtiqueta('SAR')
 
 #Creamos usuarios. El servidor no se encarga de esto, pero para probar el protocolo usamos estos usuarios
 u1 = Usuario('admin', 'admin')
@@ -68,6 +70,7 @@ listaUsuarios = [u1, u2, u3]
 u1.addVideo(v1)
 u1.addVideo(v2)
 u3.addVideo(v3)
+u2.addVideo(v4)
 
 #---------------------------------------------#
 #              VARIABLES GLOBALES             #
@@ -108,6 +111,7 @@ def Log(comando):      #Estructura Log: LOGuser1#user1
 			if(user.darUsuario()==usuario and user.darContraseña()==contra):
 				found=True
 				usuario_actual=user
+				print( "Inicio de sesion: {}:{}".format( dir_cli[0], dir_cli[1])+" Usuario: "+str(usuario_actual.darUsuario()) )
 				
 				break
 		if(found==False):				#Si no se encuentra salta -ER05
@@ -242,7 +246,7 @@ while True:
 				case=buf.decode()
 			else:
 				buf2='-ER01\r\n'     
-			print("Cliente {}:{}".format( dir_cli[0], dir_cli[1] )+" comando en uso:"+case)
+
 
 			#-----------------------------------------------------------#
 			#    Diferenciar si se ha hecho login y/o si se hace put    #
@@ -301,6 +305,7 @@ while True:
 							buf2='-ER03\r\n'	#Falta el vídeo
 						else:
 							buf2=Put(buf4.decode())
+							print("Cliente:"+ str(usuario_actual.darUsuario())+" comando en uso:"+case+" video a introducir: "+buf4.decode())
 					else:
 						buf2='-ER03\r\n'
 
@@ -310,19 +315,19 @@ while True:
 			#En caso de que se pida otro comando, se llama a la función y se devuelve el resultado
 			elif(case=='GET'):
 				comando=leer()
-				print("Cliente {}:{}".format( dir_cli[0], dir_cli[1] )+" comando en uso:"+case)
+				print("Cliente:"+ str(usuario_actual.darUsuario())+" comando en uso:"+case+" parametros: "+comando)
 				buf2=Get(comando)
 			elif(case=='TAG'):
 				comando=leer()
-				print("Cliente {}:{}".format( dir_cli[0], dir_cli[1] )+" comando en uso:"+case)
+				print("Cliente:"+ str(usuario_actual.darUsuario())+" comando en uso:"+case+" parametros: "+comando)
 				buf2=Tag(comando)
 			elif(case=='FND'):
 				comando=leer()
-				print("Cliente {}:{}".format( dir_cli[0], dir_cli[1] )+" comando en uso:"+case)
+				print("Cliente:"+ str(usuario_actual.darUsuario())+" comando en uso:"+case+" parametros: "+comando)
 				buf2=Fnd(comando)
 			elif(case=='QIT'):
 				if leer()=='':
-					print( "Cierre de conexión de {}:{}.".format( dir_cli[0], dir_cli[1] ) )
+					print("Cliente:"+ str(usuario_actual.darUsuario())+" comando en uso:"+case+" parametros: "+comando)
 					dialogo.close()
 					break
 				else:
