@@ -169,8 +169,6 @@ def Fnd(comando): #Estructura Fnd: FNDtag
 	#Recorre los vídeos y si alguno tiene la etiqueta se añade a la lista
 	#Finalmente, se devuelve +OK y la lista, separando los vídeos con #
 	for i in usuario_actual.darVideos():
-		print(i.darEtiqueta())
-		print(comando)
 		if comando in i.darEtiqueta():
 			lista += i.darID()+'#'
 	if lista!='': 
