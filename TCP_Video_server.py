@@ -166,7 +166,7 @@ def Tag(comando):  			#Estructura Tag: TAGidvideo o TAGidvideo#tag
 
 	idvideo = comando[0:5]
 	if len(comando) == 5:  #Si son solo 5 bytes, quiere comprobar los tags del video
-		if '#' not in comando:
+		if '#' in comando:
 			return '-ER04\r\n'
 		for i in usuario_actual.darVideos():
 			if i.darID() == idvideo:
@@ -181,14 +181,19 @@ def Tag(comando):  			#Estructura Tag: TAGidvideo o TAGidvideo#tag
 		return "-ER08\r\n"
 		
 	
-	#Si son más, se añade la etiqueta al vídeo con dicho id
-	#En ámbos casos, si no está el vídeo, se devuelve -ER08
-	etiquetaVideo = comando[comando.find("#")+1:len(comando)]
-	for i in usuario_actual.darVideos():
-		if i.darID() == idvideo:
-			i.addEtiqueta(etiquetaVideo)
-			return "+OK\r\n"
-	return "-ER08\r\n"
+	else:
+		if '#' not in comando:
+			return '-ER04\r\n'
+			#Si son más, se añade la etiqueta al vídeo con dicho id
+			#En ámbos casos, si no está el vídeo, se devuelve -ER08
+		etiquetaVideo = comando[comando.find("#")+1:len(comando)]
+		if'#' in etiquetaVideo:
+			return '-ER04\r\n'
+		for i in usuario_actual.darVideos():
+			if i.darID() == idvideo:
+				i.addEtiqueta(etiquetaVideo)
+				return "+OK\r\n"
+		return "-ER08\r\n"
 
 def Fnd(comando): #Estructura Fnd: FNDtag
 	lista = ''
